@@ -1,6 +1,9 @@
 import pretty_midi
 import numpy as np
 import pickle
+import glob
+import re
+import os
 
 def n_instruments(filename):
 	midi_data = pretty_midi.PrettyMIDI(filename)
@@ -108,9 +111,9 @@ def matricesToPickle(matrix_list, dest_file):
 	idx = 0
 	for matrix in matrix_list:
 		if(idx == melody_idx):
-			dest_filepath = dest_file + str(idx) + '_mel'
+			dest_filepath = dest_file + '_ch_' + 'mel'
 		else:
-			dest_filepath = dest_file + str(idx)
+			dest_filepath = dest_file + '_ch_' + str(idx)
 		with open(dest_filepath, 'wb') as filepath:
 			pickle.dump(matrix, filepath)
 		idx = idx + 1
@@ -120,9 +123,31 @@ def pickleToMidi(pickle_file,dest_file):
 		matrix = pickle.load(filepath)
 	matrixToMidi(matrix,dest_file)
 
+# For only melody tracks: channel = 'mel'
+def picklesToMidis(pickle_folder,dest_folder,channel='all'):
+	if(channel == 'all'):
+		path = pickle_folder + '/*'
+	else:
+		path = pickle_folder + '/*_ch_' + str(channel)
+	for pickle_file in glob.glob(path):
+		with open(pickle_file, 'rb') as filepath:
+			note_matrix = pickle.load(filepath)
+		dest_filepath = dest_folder + '/' + os.path.basename(pickle_file) + '.mid'
+		print('Writing MIDI file: ' + dest_filepath)
+		matrixToMidi(note_matrix,dest_filepath)
+
+def midisToPickles(midi_folder,pickle_folder):
+	path = midi_folder + '/*.mid'
+	for midi_file in glob.glob(path):
+		# pickle_folder/song_name. Remove '.mid' from path name
+		dest_filepath = pickle_folder + '/' + os.path.basename(midi_file)[:-4]
+		midiToMatrices(midi_file,200,dest_filepath)
+		print("Exporting to pickle: " + dest_filepath)
+
 if __name__ == '__main__':
 	#source_file = 'var6c2.mid'
-	#midiToMatrices(source_file,200,'data/var6c2')
-	pickleToMidi('data/var6c20_mel','output_midi/var6c20_mel.mid')
-	pickleToMidi('data/var6c21','output_midi/var6c21.mid')
-	pickleToMidi('data/var6c22','output_midi/var6c22.mid')
+	midi_src_folder = 'source_midi/goldberg_variations'
+	pickle_folder = 'data/goldberg_variations'
+	midi_dest_folder = 'output_midi/goldberg_variations'
+	picklesToMidis(pickle_folder,midi_dest_folder,'mel')
+	#midisToPickles(midi_src_folder,pickle_folder)

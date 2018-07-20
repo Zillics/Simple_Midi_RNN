@@ -44,10 +44,10 @@ def midiToMatrix(pretty_midi_obj,sample_frequency):
 			k = k - 1
 		rest = rest + 1 # If no note found on that timestep: increase rest by one step
 		t = t + 1
-	out_matrix.resize(i + 1,n_notes + 2)
+	out_matrix.resize(i,n_notes + 2)
 	return out_matrix
 
-# Converts matrix to midi file
+# Converts matrix to MIDI file
 def matrixToMidi(matrix,dest_file):
 	# Create a PrettyMIDI object
 	midi_obj = pretty_midi.PrettyMIDI()
@@ -168,19 +168,59 @@ def picklesToMidis(pickle_folder,dest_folder,channel='all'):
 		print('Writing MIDI file: ' + dest_filepath)
 		matrixToMidi(note_matrix,dest_filepath)
 
-def midisToPickles(midi_folder,pickle_folder,sample_freq,channel='mel'):
+# Convert all MIDI files to numpy matrix format. Dump each matrix to its separate pickle file 
+def midisToPickles(midi_folder,pickle_folder,sample_freq=SAMPLE_FREQUENCY,channel='mel'):
 	path = midi_folder + '/*.mid'
 	for midi_file in glob.glob(path):
 		# pickle_folder/song_name. Remove '.mid' from path name
 		dest_filepath = pickle_folder + '/' + os.path.basename(midi_file)[:-4]
 		print("Exporting to pickle: " + dest_filepath)
 		midiToPickles(midi_file,dest_filepath,sample_freq,channel)
-		
+
+# Convert all MIDI files to one numpy matrix. Dump matrix into  
+def midisToPickle(midi_folder,pickle_file,sample_freq=SAMPLE_FREQUENCY,channel='mel'):
+	path = midi_folder + '/*.mid'
+	matrix_list = [] # List of matrices; each representing one MIDI file
+	n_notes = 0 # Counter for total number of notes among all MIDI files
+	for midi_file in glob.glob(path):
+		print("Converting %s to numpy matrix format...." % (midi_file))
+		midi_data = pretty_midi.PrettyMIDI(midi_file)
+		instr_list = midi_data.instruments
+		channel_list = []
+		for instrument in instr_list:
+			matrix = midiToMatrix(instrument,sample_freq)
+			if(matrix.shape[0] > 0): # Ignore empty matrices
+				channel_list.append(matrix)
+			else:
+				print("Skipping empty MIDI channel")
+		if(channel=='mel'):
+			idx = isMelody(channel_list)
+		else:
+			if(channel=='bass'):
+				idx = isBass(channel_list)
+			else:
+				idx = 0
+		matrix_list.append(channel_list[idx])
+		n_notes += channel_list[idx].shape[0]
+	out_matrix = np.zeros((n_notes,130))
+	i = 0
+	for m in matrix_list:
+		out_matrix[i:(i+m.shape[0]),:] = m # Concatenate next matrix
+		i += m.shape[0]
+	print("Matrix of shape %d , %d ready" % (out_matrix.shape[0],out_matrix.shape[1]))
+	print("Dumping into pickle file %s" % (pickle_file))
+	# Finally dump the matrix into one single pickle file
+	with open(pickle_file, 'wb') as filepath:
+		pickle.dump(out_matrix,filepath)
+
+
 if __name__ == '__main__':
-	midi_file = 'source_midi/aria.mid'
+	#midi_file = 'source_midi/aria.mid'
 	midi_src_folder = 'source_midi'
-	pickle_file = 'data/aria_test'
+	pickle_file = 'data/goldberg_variations'
 	pickle_folder = 'data/melody'
 	dest_midi_folder = 'output_midi'
-	#midisToPickles(midi_src_folder,pickle_folder,SAMPLE_FREQUENCY)
-	picklesToMidis(pickle_folder,dest_midi_folder)
+	#midisToPickles(midi_src_folder,pickle_folder)
+	#pickleToMidi('data/melody/1_aria','test_aria.mid')
+	#with open(pickle_file, 'rb') as filepath:
+	#	matrix = pickle.load(filepath)

@@ -1,3 +1,10 @@
+# Folders
 midi-files/
-*.mid
 data/
+__pycache__/
+weights/
+output_data/
+# File extensions
+*.mid
+*.hdf5
+

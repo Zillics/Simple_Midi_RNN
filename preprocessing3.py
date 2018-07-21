@@ -170,19 +170,26 @@ def picklesToMidis(pickle_folder,dest_folder,channel='all'):
 
 # Convert all MIDI files to numpy matrix format. Dump each matrix to its separate pickle file 
 def midisToPickles(midi_folder,pickle_folder,sample_freq=SAMPLE_FREQUENCY,channel='mel'):
-	path = midi_folder + '/*.mid'
-	for midi_file in glob.glob(path):
+	path = midi_folder + '/**/*.mid'
+	idx = 0 # Prefix for each file in order to avoid overwriting on file with identical name
+	for midi_file in glob.glob(path,recursive=True):
 		# pickle_folder/song_name. Remove '.mid' from path name
-		dest_filepath = pickle_folder + '/' + os.path.basename(midi_file)[:-4]
-		print("Exporting to pickle: " + dest_filepath)
-		midiToPickles(midi_file,dest_filepath,sample_freq,channel)
+		dest_filepath = pickle_folder + '/' + str(idx) + '_' + os.path.basename(midi_file)[:-4]
+		print("Exporting " + midi_file + " to pickle:")
+		try:
+			midiToPickles(midi_file,dest_filepath,sample_freq,channel)
+		except Exception as e:
+			print("midiToPickles failed for MIDI file %s, due to: %s" % (dest_filepath,e))
+		else:
+			print("MIDI to pickle file sucessful!")
 
 # Convert all MIDI files to one numpy matrix. Dump matrix into  
 def midisToPickle(midi_folder,pickle_file,sample_freq=SAMPLE_FREQUENCY,channel='mel'):
-	path = midi_folder + '/*.mid'
+	path = midi_folder + '/**/*.mid'
+	print(path)
 	matrix_list = [] # List of matrices; each representing one MIDI file
 	n_notes = 0 # Counter for total number of notes among all MIDI files
-	for midi_file in glob.glob(path):
+	for midi_file in glob.glob(path,recursive=True):
 		print("Converting %s to numpy matrix format...." % (midi_file))
 		midi_data = pretty_midi.PrettyMIDI(midi_file)
 		instr_list = midi_data.instruments
@@ -216,10 +223,10 @@ def midisToPickle(midi_folder,pickle_file,sample_freq=SAMPLE_FREQUENCY,channel='
 
 if __name__ == '__main__':
 	#midi_file = 'source_midi/aria.mid'
-	midi_src_folder = 'source_midi'
-	pickle_file = 'data/goldberg_variations'
-	pickle_folder = 'data/melody'
+	midi_src_folder = 'source_midi/bach'
+	pickle_folder = 'data/bach-melody'
 	dest_midi_folder = 'output_midi'
+	pickleToMidi('data/bach-melody/fugue21','test_5.mid')
 	#midisToPickles(midi_src_folder,pickle_folder)
 	#pickleToMidi('data/melody/1_aria','test_aria.mid')
 	#with open(pickle_file, 'rb') as filepath:

@@ -222,12 +222,11 @@ def midisToPickle(midi_folder,pickle_file,sample_freq=SAMPLE_FREQUENCY,channel='
 
 
 if __name__ == '__main__':
-	#midi_file = 'source_midi/aria.mid'
-	midi_src_folder = 'source_midi/bach'
-	pickle_folder = 'data/bach-melody'
-	dest_midi_folder = 'output_midi'
-	pickleToMidi('data/bach-melody/fugue21','test_5.mid')
-	#midisToPickles(midi_src_folder,pickle_folder)
-	#pickleToMidi('data/melody/1_aria','test_aria.mid')
-	#with open(pickle_file, 'rb') as filepath:
-	#	matrix = pickle.load(filepath)
+	#midi_src_folder = 'source_midi/bach'
+	#pickle_folder = 'data/bach-melody'
+	#dest_midi_folder = 'output_midi'
+	#pickleToMidi('data/bach-melody/fugue21','test_5.mid')
+	with open('data/train_data/ALL_SEQUENCES_1','rb') as filepath:
+		X,y = pickle.load(filepath)
+	print(X[0,:,:])
+	#matrixToMidi(X[1000,:,:],'SEQUENCE_TEST.mid')

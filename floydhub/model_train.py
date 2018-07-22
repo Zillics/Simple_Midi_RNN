@@ -13,7 +13,7 @@ from keras.callbacks import ModelCheckpoint
 
 
 SEQUENCE_LENGTH = 50
-TRAIN_DATA_SIZE = 20000# Maximum number of sequences in each training input (i.e. X.shape[0])
+TRAIN_DATA_SIZE = 20000 # Maximum number of sequences in each training input (i.e. X.shape[0])
 
 def pickleToMatrix(pickle_file):
 	with open(pickle_file, 'rb') as filepath:
@@ -152,12 +152,12 @@ def train_2(model, train_data_path,epoch_n=200):#network_input, network_output):
 				X,y = pickle.load(filepath)
 			model.fit(X, y, epochs=1, batch_size=64) #callbacks=callbacks_list)
 		print("Saving weights....")
-		weight_filepath = ("weights/weights-improvement-epoch%d-{loss:.4f}-bigger.hdf5" % (i))
+		weight_filepath = ("output/weights-improvement-epoch%d-{loss:.4f}-bigger.hdf5" % (i))
 		model.save(weight_filepath)
 
 def train_3(model, train_data_path, epoch_n=400):
 
-	filepath = "weights/weights-improvement-{epoch:02d}-{loss:.4f}-bigger.hdf5"
+	filepath = "/output/weights-improvement-{epoch:02d}-{loss:.4f}-bigger.hdf5"
 	checkpoint = ModelCheckpoint(
 		filepath,
 		monitor='loss',
@@ -171,9 +171,7 @@ def train_3(model, train_data_path, epoch_n=400):
 	model.fit(X, y, epochs=epoch_n, batch_size=64, callbacks=callbacks_list)
 
 if __name__ == '__main__':
-	dataset_path = 'data/bach-melody'
-	train_data_location = 'data/train_data/ALL_SEQUENCES'
-	#picklesToSequence(dataset_path)
+	train_data_location = '/mount_point/ALL_SEQUENCES'
 	model = create_network()
 	train_3(model,train_data_location)
 

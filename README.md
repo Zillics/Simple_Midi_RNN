@@ -2,6 +2,7 @@
 
 ## Goal:
 To generate MIDI music in the style of the training samples. 
+
 The implementation steps:
 1. Proof of concept for methodology: preprocessing steps, input data format, ML model type, rough understanding of hyperparameters
 2. Generate basic monophonic melodies
